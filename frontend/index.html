@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Mobile Camera Live</h2>
+
+<!-- 📱 Mobile camera stream -->
+<img src="http://100.125.160.56:8080/video" width="500">
+
+<br><br>
+
+<button onclick="capture()">Capture</button>
+
+<script>
+function capture(){
+
+    navigator.geolocation.getCurrentPosition(pos=>{
+
+        const payload = {
+            lat: Number(pos.coords.latitude),
+            lon: Number(pos.coords.longitude),
+            time: new Date().toISOString()
+        };
+
+        console.log("Sending:", payload);
+
+        fetch("http://127.0.0.1:8000/capture",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if(!res.ok){
+                throw new Error("Server error");
+            }
+            return res.json();
+        })
+        .then(data=>{
+            if(data.status === "SAFE"){
+                alert("✅ Saved: " + data.file);
+            } else {
+                alert("❌ " + data.message);
+            }
+        })
+        .catch(err=>{
+            console.error(err);
+            alert("Request failed");
+        });
+
+    }, ()=>{
+        alert("Location permission denied");
+    });
+}
+</script>
+
+</body>
+</html>
